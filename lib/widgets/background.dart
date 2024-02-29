@@ -20,12 +20,12 @@ class BackgroundAlign extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: AlignmentDirectional(double.parse(xvalue as String), double.parse(yvalue as String)),
+      alignment: AlignmentDirectional(double.parse(xvalue), double.parse(yvalue)),
       child: Container(
         height: height,
         width: width,
         decoration: BoxDecoration(
-          color: colorValue ?? Colors.transparent,
+          color: colorValue,
           shape: shape,
 
         ),
