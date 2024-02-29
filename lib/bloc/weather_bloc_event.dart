@@ -1,26 +1,30 @@
 part of 'weather_bloc_bloc.dart';
 
 sealed class WeatherBlocEvent extends Equatable {
-  const WeatherBlocEvent();
-
-  @override
-  List<Object> get props => [];
-}
-
-class FetchWeather extends WeatherBlocEvent {
-final Position position;
-
-const FetchWeather(this.position);
-
+const WeatherBlocEvent();
 @override
-List<Object> get props => [position];
+List<Object> get props => [];
 }
-//refresh
-class RefreshWeather extends WeatherBlocEvent {
-  final Position position;
 
-  const RefreshWeather(this.position);
 
-  @override
-  List<Object> get props => [position];
+final class FetchWeatherEvent extends WeatherBlocEvent{
+
 }
+
+
+
+//
+// part of 'demo_bloc_bloc.dart';
+//
+// sealed class DemoBlocEvent extends Equatable {
+// const DemoBlocEvent();
+//
+// @override
+// List<Object> get props => [];
+// }
+//
+// class FetchWeatherEvent extends DemoBlocEvent{
+// final String cityName; // Define cityName parameter
+//
+// FetchWeatherEvent({required this.cityName}); // Constructor with cityName parameter
+// }

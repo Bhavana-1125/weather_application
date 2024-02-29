@@ -1,58 +1,69 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:geolocator_platform_interface/src/models/position.dart';
 import 'package:weather_app_flutter/bloc/weather_bloc_bloc.dart';
+import 'package:weather_app_flutter/bloc/weather_bloc_state.dart';
+import 'package:weather_app_flutter/screens/week_weather_screen.dart';
+import 'package:weather_app_flutter/widgets/additional_info.dart';
 import 'package:weather_app_flutter/widgets/background.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  WeatherBlocBloc weatherBlocBloc = WeatherBlocBloc();
+
+  @override
+  void initState() {
+    super.initState();
+    // TODO: implement initState
+    weatherBlocBloc.add(FetchWeatherEvent());
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<WeatherBlocBloc, WeatherBlocState>(
+      bloc: weatherBlocBloc,
       builder: (context, state) {
-        if (state is WeatherBlocSuccess) {
+        if (state is WeatherLoadingState) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is WeatherSuccessState) {
+          final weatherData = state.weatherData;
+
           return Scaffold(
             appBar: AppBar(
-              leading: Icon(Icons.search),
+              leading: const Icon(Icons.search),
               elevation: 0,
               backgroundColor: Colors.transparent,
               title: Text(
-                '${state.weather.areaName}',
+                weatherData.timezone.split('/').last.replaceAll('_', ' '),
                 style:
                     const TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
               ),
               centerTitle: true,
               actions: [
                 IconButton(
-                  onPressed: () async {
-                    // Fetch the current position
-                    Position position = await Geolocator.getCurrentPosition();
-                    // Dispatch the FetchWeather event with the current position
-                    BlocProvider.of<WeatherBlocBloc>(context)
-                        .add(FetchWeather(position));
-                  },
+                  onPressed: () {},
                   icon: const Icon(Icons.refresh),
                 ),
               ],
             ),
-            //backgroundColor: Color(0xFF4FC3F7),
-            backgroundColor: Color(0xFF3F51B5),
+            backgroundColor: const Color(0xFF3F51B5),
             body: Padding(
-              padding: EdgeInsets.fromLTRB(35, 0, 35, 10),
+              padding: const EdgeInsets.fromLTRB(35, 0, 35, 10),
               //padding: EdgeInsets.fromLTRB(40, 1.2 * kToolbarHeight, 20, 10),
               child: SizedBox(
                 height: MediaQuery.of(context).size.height,
                 child: Stack(
                   children: [
-                    //0xFF1565C0
                     const BackgroundAlign(
                       xvalue: '3',
                       yvalue: '-0.3',
                       colorValue: Color(0xFF1565C0),
-                      //colorValue: Color(0xFFFFC400),
                       height: 400,
                       width: 500,
                       shape: BoxShape.circle,
@@ -61,7 +72,6 @@ class HomeScreen extends StatelessWidget {
                       xvalue: '-3',
                       yvalue: '-0.3',
                       colorValue: Color(0xFF1565C0),
-                      //colorValue: Color(0xFFFFC400),
                       height: 400,
                       width: 500,
                       shape: BoxShape.circle,
@@ -82,9 +92,6 @@ class HomeScreen extends StatelessWidget {
                             const BoxDecoration(color: Colors.transparent),
                       ),
                     ),
-                    // BlocBuilder<WeatherBlocBloc, WeatherBlocState>(
-                    //   builder: (context, state) {
-
                     SizedBox(
                       height: MediaQuery.of(context).size.height,
                       width: MediaQuery.of(context).size.width,
@@ -96,364 +103,144 @@ class HomeScreen extends StatelessWidget {
                             height: 200,
                           ),
                           Text(
-                            '${state.weather.temperature!.celsius!.round()}°C',
+                            '${weatherData.current.temp}°C',
                             style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 50,
                                 fontWeight: FontWeight.w600),
                           ),
                           Text(
-                            '${state.weather.weatherMain!.toUpperCase()}',
+                            weatherData.current.weather[0].description,
                             style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 20,
                                 fontWeight: FontWeight.w500),
                           ),
                           const SizedBox(
-                            height: 5,
-                          ),
-                          // Text(
-                          //   'Thursday 22 | 09:45am',
-                          //   style: TextStyle(
-                          //       fontSize: 15,
-                          //       color: Colors.white,
-                          //       fontWeight: FontWeight.w300),
-                          // ),
-                          const SizedBox(
                             height: 15,
                           ),
                           Container(
-                            height: 120,
-                            width: 350,
-                            decoration: BoxDecoration(
-                              color: Color(0xFF283593),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            //color: Color(0xFFE1F5FE),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.only(top: 18.0, left: 8),
-                                  child: Column(
-                                    children: [
-                                      const Image(
-                                          height: 40,
-                                          image: AssetImage(
-                                              'lib/assets/icons/umbrella3.png')),
-                                      Text(
-                                        '${state.weather.pressure}',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      const Text(
-                                        'Pressure',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(top: 18.0),
-                                  child: Column(
-                                    children: [
-                                      const Image(
-                                        height: 40,
-                                        image: AssetImage(
-                                            'lib/assets/icons/waterdrop.png'),
-                                      ),
-                                      Text(
-                                        '${state.weather.humidity}',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      const Text(
-                                        'Humidity',
-                                        style: TextStyle(
-                                            fontSize: 16, color: Colors.white),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(top: 18.0, right: 8),
-                                  child: Column(
-                                    children: [
-                                      const Image(
-                                          height: 40,
-                                          image: AssetImage(
-                                              'lib/assets/icons/windspeed.png')),
-                                      Text(
-                                        '${state.weather.windSpeed}',
-                                        style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white),
-                                      ),
-                                      const Text(
-                                        'Wind Speed',
-                                        style: TextStyle(
-                                            fontSize: 16, color: Colors.white),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                              height: 120,
+                              width: 350,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF283593),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  AdditionalInfoItem(
+                                      weatherIcon:
+                                          'lib/assets/icons/umbrella3.png',
+                                      label: 'pressure',
+                                      value: weatherData.current.pressure),
+                                  AdditionalInfoItem(
+                                      weatherIcon:
+                                          'lib/assets/icons/waterdrop.png',
+                                      label: 'Humidity',
+                                      value: weatherData.current.humidity),
+                                  AdditionalInfoItem(
+                                      weatherIcon:
+                                          'lib/assets/icons/windspeed.png',
+                                      label: 'Wind speed',
+                                      value:
+                                          weatherData.current.windSpeed.toInt())
+                                  //             style: const TextStyle( )
+                                ],
+                              )),
                           const SizedBox(
                             height: 16,
                           ),
-                          const Row(
+                          Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
+                              const Text(
                                 'Today',
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                     fontSize: 17),
                               ),
-                              Text(
-                                '7-day Forecast',
-                                style: TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const WeekWeatherScreen(),
+                                    ),
+                                  );
+                                },
+                                child: const Text(
+                                  '7-day Forecast',
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white),
+                                ),
                               )
                             ],
                           ),
                           const SizedBox(
                             height: 16,
                           ),
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Container(
-                                  height: 120,
-                                  width: 70,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFF283593),
-                                    borderRadius: BorderRadius.circular(18),
-                                  ),
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(10.0),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          '10AM',
-                                          style: TextStyle(
+                          SizedBox(
+                            height: 150,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: weatherData.hourly.length > 12
+                                  ? 12
+                                  : weatherData.hourly.length,
+                              itemBuilder: (context, index) {
+                                final hourData = weatherData.hourly[index];
+                                return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Container(
+                                    // height: 100,
+                                    width: 80,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF283593),
+                                      borderRadius: BorderRadius.circular(18),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        //crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            '${DateTime.fromMillisecondsSinceEpoch(hourData.dt * 1000).hour}AM',
+                                            style: const TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
-                                              color: Colors.white),
-                                        ),
-                                        SizedBox(
-                                          height: 8,
-                                        ),
-                                        Icon(
-                                          Icons.cloud,
-                                          size: 32,
-                                          color: Colors.white,
-                                        ),
-                                        SizedBox(
-                                          height: 8,
-                                        ),
-                                        Text(
-                                          '25°',
-                                          style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            height: 4,
+                                          ),
+                                          Image.asset(
+                                              "lib/assets/weather/${weatherData.hourly[index].weather[0].icon}.png",
+                                              height: 50),
+                                          const SizedBox(
+                                            height: 4,
+                                          ),
+                                          Text(
+                                            '${hourData.temp.toStringAsFixed(1)}°C',
+                                            style: const TextStyle(
                                               fontSize: 16,
-                                              color: Colors.white),
-                                        ),
-                                      ],
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(
-                                  width: 13,
-                                ),
-                                Container(
-                                  height: 120,
-                                  width: 70,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFF283593),
-                                    borderRadius: BorderRadius.circular(18),
-                                  ),
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(10.0),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          '12AM',
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white),
-                                        ),
-                                        SizedBox(
-                                          height: 8,
-                                        ),
-                                        Icon(
-                                          Icons.cloud,
-                                          size: 32,
-                                          color: Colors.white,
-                                        ),
-                                        SizedBox(
-                                          height: 8,
-                                        ),
-                                        Text(
-                                          '28°',
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.white),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 13,
-                                ),
-                                Container(
-                                  height: 120,
-                                  width: 70,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFF283593),
-                                    borderRadius: BorderRadius.circular(18),
-                                  ),
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(10.0),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          '10AM',
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white),
-                                        ),
-                                        SizedBox(
-                                          height: 8,
-                                        ),
-                                        Icon(
-                                          Icons.cloud,
-                                          size: 32,
-                                          color: Colors.white,
-                                        ),
-                                        SizedBox(
-                                          height: 8,
-                                        ),
-                                        Text(
-                                          '15°',
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.white),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 13,
-                                ),
-                                Container(
-                                  height: 120,
-                                  width: 70,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFF283593),
-                                    borderRadius: BorderRadius.circular(18),
-                                  ),
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(10.0),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          '11AM',
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white),
-                                        ),
-                                        SizedBox(
-                                          height: 8,
-                                        ),
-                                        Icon(
-                                          Icons.cloud,
-                                          size: 32,
-                                          color: Colors.white,
-                                        ),
-                                        SizedBox(
-                                          height: 8,
-                                        ),
-                                        Text(
-                                          '14°',
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.white),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 13,
-                                ),
-                                Container(
-                                  height: 120,
-                                  width: 70,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFF283593),
-                                    borderRadius: BorderRadius.circular(18),
-                                  ),
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(10.0),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          '12PM',
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white),
-                                        ),
-                                        SizedBox(
-                                          height: 8,
-                                        ),
-                                        Icon(
-                                          Icons.cloud,
-                                          size: 32,
-                                          color: Colors.white,
-                                        ),
-                                        SizedBox(
-                                          height: 8,
-                                        ),
-                                        Text(
-                                          '12°',
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.white),
-                                              
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 13,
-                                ),
-                              ],
+                                );
+                              },
                             ),
-                          )
+                          ),
                         ],
                       ),
                     ),
