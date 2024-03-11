@@ -19,19 +19,23 @@ class AdditionalInfoItem extends StatelessWidget {
       child: Column(
         children: [
           Image(
+            key: const Key('additionalInfoItem_image'),
             height: 40,
             image: AssetImage(
                 weatherIcon),
           ),
           Text(
+            key: const Key('additionalInfoItem_valueText'),
             '$value',
             style: const TextStyle(
+
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
           ),
           Text(
+            key: const Key('additionalInfoItem_labelText'),
             label,
             style: const TextStyle(
               fontSize: 16,
